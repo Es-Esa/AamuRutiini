@@ -231,7 +231,7 @@ class _KidModeScreenState extends ConsumerState<KidModeScreen> {
 
             const SizedBox(height: 24),
 
-            // Current task
+            // Current task (only one visible at a time)
             Expanded(
               child: tasks.isEmpty
                   ? const Center(
@@ -268,23 +268,33 @@ class _KidModeScreenState extends ConsumerState<KidModeScreen> {
                             ],
                           ),
                         )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: tasks.length,
-                          itemBuilder: (context, index) {
-                            final task = tasks[index];
-                            final isCompleted = completions[task.id] == true;
-                            final isCurrent = task.id == currentTask.id;
-                            final canComplete = _canCompleteTask(task);
-
-                            return TaskCardWidget(
-                              task: task,
-                              isCompleted: isCompleted,
-                              isCurrent: isCurrent,
-                              canComplete: canComplete,
-                              onComplete: () => _markTaskComplete(task.id),
-                            );
-                          },
+                      : Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Task number indicator
+                                Text(
+                                  'Tehtävä ${completedCount + 1} / $totalCount',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                                // Single task card - larger and centered
+                                TaskCardWidget(
+                                  task: currentTask,
+                                  isCompleted: false,
+                                  isCurrent: true,
+                                  canComplete: _canCompleteTask(currentTask),
+                                  onComplete: () => _markTaskComplete(currentTask.id),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
             ),
           ],

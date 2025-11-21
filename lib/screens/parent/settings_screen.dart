@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/app_providers.dart';
 import '../../services/secure_storage_service.dart';
 import '../../services/notification_service.dart';
+import 'app_info_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -235,31 +236,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 32),
 
           // App info
+          ListTile(
+            leading: const Icon(Icons.info, color: Colors.orange),
+            title: const Text('Sovelluksen tiedot'),
+            subtitle: const Text('Versio, tekijä, tietosuoja ja lisenssit'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AppInfoScreen(),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 16),
+
           const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Text(
-                  'Aamurutiini',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Versio 1.0.0',
-                  style: TextStyle(color: Colors.grey),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Sovellus auttaa lasta suorittamaan aamun tehtävät itsenäisesti PECS-kuvien avulla.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              '© 2025 Henrik Viljanen',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
             ),
           ),
+
+          const SizedBox(height: 32),
         ],
       ),
     );
