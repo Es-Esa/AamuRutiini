@@ -25,6 +25,9 @@ class _PecsSearchScreenState extends State<PecsSearchScreen> {
   // Suomi-englanti sanakirja yleisimmille aamurutiinisanoille
   final Map<String, String> _translations = {
     // Aamurutiini
+    'aamu': 'morning',
+    'aamulla': 'morning',
+    'aika': 'time',
     'herää': 'wake up',
     'herätä': 'wake up',
     'nouse': 'get up',
@@ -34,6 +37,8 @@ class _PecsSearchScreenState extends State<PecsSearchScreen> {
     // Hygienia
     'pese': 'wash',
     'pesu': 'wash',
+    'peseydy': 'wash',
+    'peseytyminen': 'wash',
     'hampaat': 'teeth',
     'hammas': 'tooth',
     'harjaa': 'brush',
@@ -42,19 +47,28 @@ class _PecsSearchScreenState extends State<PecsSearchScreen> {
     'kylpy': 'bath',
     'wc': 'toilet',
     'vessa': 'toilet',
+    'potta': 'potty',
     'kädet': 'hands',
     'käsi': 'hand',
     'kasvot': 'face',
+    'hiukset': 'hair',
+    'saippua': 'soap',
+    'pyyhe': 'towel',
     
     // Pukeutuminen
     'pukeudu': 'get dressed',
     'pukeutuminen': 'dress',
     'vaatteet': 'clothes',
+    'vaate': 'clothing',
     'paita': 'shirt',
     'housut': 'pants',
     'sukat': 'socks',
     'kengät': 'shoes',
+    'kenkä': 'shoe',
     'takki': 'jacket',
+    'hattu': 'hat',
+    'lapaset': 'mittens',
+    'käsineet': 'gloves',
     
     // Ruokailu
     'aamiainen': 'breakfast',
@@ -82,6 +96,12 @@ class _PecsSearchScreenState extends State<PecsSearchScreen> {
     'reppu': 'backpack',
     'koulu': 'school',
     'päiväkoti': 'kindergarten',
+    'lähde': 'go',
+    'mene': 'go',
+    'tule': 'come',
+    'odota': 'wait',
+    'lopeta': 'stop',
+    'jatka': 'continue',
     
     // Tunteet ja tilat
     'iloinen': 'happy',

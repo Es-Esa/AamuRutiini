@@ -34,6 +34,15 @@ class AppSettings extends HiveObject {
   @HiveField(9)
   bool ttsEnabled;
 
+  @HiveField(10)
+  String taskTimeoutSound;
+
+  @HiveField(11)
+  String departureSound;
+
+  @HiveField(12)
+  int soundRepeatCount;
+
   AppSettings({
     this.isFirstLaunch = true,
     this.notificationsEnabled = true,
@@ -45,6 +54,9 @@ class AppSettings extends HiveObject {
     this.vibrateEnabled = true,
     this.themeColorIndex = 0,
     this.ttsEnabled = true,
+    this.taskTimeoutSound = 'assets/sounds/tasksounds/alarm.mp3',
+    this.departureSound = 'assets/sounds/finalsounds/hei_kouluun.mp3',
+    this.soundRepeatCount = 3,
   });
 
   AppSettings copyWith({
@@ -58,6 +70,9 @@ class AppSettings extends HiveObject {
     bool? vibrateEnabled,
     int? themeColorIndex,
     bool? ttsEnabled,
+    String? taskTimeoutSound,
+    String? departureSound,
+    int? soundRepeatCount,
   }) {
     return AppSettings(
       isFirstLaunch: isFirstLaunch ?? this.isFirstLaunch,
@@ -70,6 +85,9 @@ class AppSettings extends HiveObject {
       vibrateEnabled: vibrateEnabled ?? this.vibrateEnabled,
       themeColorIndex: themeColorIndex ?? this.themeColorIndex,
       ttsEnabled: ttsEnabled ?? this.ttsEnabled,
+      taskTimeoutSound: taskTimeoutSound ?? this.taskTimeoutSound,
+      departureSound: departureSound ?? this.departureSound,
+      soundRepeatCount: soundRepeatCount ?? this.soundRepeatCount,
     );
   }
 

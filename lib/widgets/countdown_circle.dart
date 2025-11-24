@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/timer_service.dart';
 
-class CountdownCircle extends StatelessWidget {
+class CountdownCircle extends StatefulWidget {
   final Duration timeRemaining;
   final TimeOfDay departureTime;
 
@@ -11,10 +12,17 @@ class CountdownCircle extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<CountdownCircle> createState() => _CountdownCircleState();
+}
+
+class _CountdownCircleState extends State<CountdownCircle> {
+  final _timerService = TimerService();
+
+  @override
   Widget build(BuildContext context) {
     // Calculate total time (assume 2 hours max for morning routine)
     const totalMinutes = 120.0;
-    final remainingMinutes = timeRemaining.inMinutes.toDouble();
+    final remainingMinutes = widget.timeRemaining.inMinutes.toDouble();
     final progress = (totalMinutes - remainingMinutes) / totalMinutes;
 
     return Container(
@@ -65,7 +73,7 @@ class CountdownCircle extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                _formatDuration(timeRemaining),
+                _formatDuration(widget.timeRemaining),
                 style: const TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
@@ -88,7 +96,7 @@ class CountdownCircle extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'Lähtö klo ${departureTime.hour.toString().padLeft(2, '0')}:${departureTime.minute.toString().padLeft(2, '0')}',
+                  'Lähtö klo ${widget.departureTime.hour.toString().padLeft(2, '0')}:${widget.departureTime.minute.toString().padLeft(2, '0')}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -96,6 +104,44 @@ class CountdownCircle extends StatelessWidget {
                   ),
                 ),
               ),
+              // Mute button - shows when departure alert has started
+              if (_timerService.departureAlertStartTime != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: ListenableBuilder(
+                    listenable: _timerService,
+                    builder: (context, child) {
+                      final canMute = _timerService.canMuteDepartureAlert;
+                      final isMuted = _timerService.isDepartureAlertMuted;
+                      
+                      return ElevatedButton.icon(
+                        onPressed: canMute && !isMuted ? () {
+                          _timerService.muteDepartureAlert();
+                        } : null,
+                        icon: Icon(
+                          isMuted ? Icons.volume_off : Icons.volume_up,
+                          size: 20,
+                        ),
+                        label: Text(
+                          isMuted ? 'Mykistetty' : 'Mykistä',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isMuted 
+                              ? Colors.grey[300]
+                              : Colors.orange,
+                          foregroundColor: isMuted
+                              ? Colors.grey[600]
+                              : Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           ),
         ],

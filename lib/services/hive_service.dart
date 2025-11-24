@@ -55,7 +55,17 @@ class HiveService {
   }
 
   static AppSettings getSettings() {
-    return settingsBox.get('main', defaultValue: AppSettings())!;
+    final settings = settingsBox.get('main', defaultValue: AppSettings())!;
+    
+    // Migrate old settings: if taskTimeoutSound is empty, set default
+    if (settings.taskTimeoutSound.isEmpty) {
+      settings.taskTimeoutSound = 'assets/sounds/tasksounds/alarm.mp3';
+    }
+    if (settings.departureSound.isEmpty) {
+      settings.departureSound = 'assets/sounds/finalsounds/hei_kouluun.mp3';
+    }
+    
+    return settings;
   }
 
   // Task Completions
@@ -86,8 +96,8 @@ class HiveService {
     }
   }
 
-  // Initialize default tasks
-  static Future<void> initializeDefaultTasks() async {
+  // Ensure default tasks exist (called on every app start)
+  static Future<void> ensureDefaultTasks() async {
     if (tasksBox.isEmpty) {
       final defaultTasks = [
         MorningTask(

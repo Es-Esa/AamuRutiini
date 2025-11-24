@@ -158,11 +158,13 @@ class TaskListScreen extends ConsumerWidget {
       ),
     );
 
-    if (confirm == true) {
+    if (confirm == true && context.mounted) {
       await ref.read(tasksProvider.notifier).deleteTask(task.id);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tehtävä "${task.title}" poistettu')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Tehtävä "${task.title}" poistettu')),
+        );
+      }
     }
   }
 }

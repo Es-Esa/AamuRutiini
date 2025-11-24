@@ -1,0 +1,20 @@
+{
+  "tasksounds": [
+    "assets/sounds/tasksounds/alarm.mp3",
+    "assets/sounds/tasksounds/fart.mp3",
+    "assets/sounds/tasksounds/fart2.mp3",
+    "assets/sounds/tasksounds/fart3.mp3",
+    "assets/sounds/tasksounds/fun.mp3",
+    "assets/sounds/tasksounds/fun2.mp3",
+    "assets/sounds/tasksounds/mahtavaa.mp3",
+    "assets/sounds/tasksounds/on_aika_suorittaa_tehtava.mp3"
+  ],
+  "finalsounds": [
+    "assets/sounds/finalsounds/hei_kouluun.mp3",
+    "assets/sounds/finalsounds/hei_mahtavaa_nyt_se_alkaa.mp3",
+    "assets/sounds/finalsounds/Keke.mp3",
+    "assets/sounds/finalsounds/koulun_lahtoo.mp3",
+    "assets/sounds/finalsounds/koulu_kutsuu.mp3",
+    "assets/sounds/finalsounds/minne_no_kouluun.mp3"
+  ]
+}

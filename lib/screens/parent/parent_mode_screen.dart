@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/app_providers.dart';
 import '../../services/secure_storage_service.dart';
-import '../../services/notification_service.dart';
+import '../../widgets/parent_tutorial_dialog.dart';
 import 'task_list_screen.dart';
 import 'settings_screen.dart';
-import 'pecs_search_screen.dart';
 
 class ParentModeScreen extends ConsumerStatefulWidget {
   const ParentModeScreen({Key? key}) : super(key: key);
@@ -29,6 +29,35 @@ class _ParentModeScreenState extends ConsumerState<ParentModeScreen> {
     if (!hasPin) {
       setState(() => _isUnlocked = true);
     }
+    
+    // Check if tutorial should be shown
+    if (hasPin) {
+      // Will show after PIN unlock
+    } else {
+      _checkAndShowTutorial();
+    }
+  }
+  
+  Future<void> _checkAndShowTutorial() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenTutorial = prefs.getBool('parent_mode_tutorial_shown') ?? false;
+    
+    if (!hasSeenTutorial && mounted) {
+      // Small delay to let the UI settle
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        _showTutorial();
+        await prefs.setBool('parent_mode_tutorial_shown', true);
+      }
+    }
+  }
+  
+  void _showTutorial() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const ParentTutorialDialog(),
+    );
   }
 
   Future<void> _verifyPin() async {
@@ -37,6 +66,7 @@ class _ParentModeScreenState extends ConsumerState<ParentModeScreen> {
 
     if (isValid) {
       setState(() => _isUnlocked = true);
+      _checkAndShowTutorial();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -45,27 +75,6 @@ class _ParentModeScreenState extends ConsumerState<ParentModeScreen> {
         ),
       );
       _pinController.clear();
-    }
-  }
-
-  Future<void> _scheduleNotifications() async {
-    final tasks = ref.read(tasksProvider);
-    final settings = ref.read(settingsProvider);
-
-    if (settings.notificationsEnabled) {
-      final today = DateTime.now();
-      await NotificationService().scheduleAllTasks(
-        tasks,
-        today,
-        useTts: settings.ttsEnabled,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ilmoitukset ajastettu onnistuneesti'),
-          backgroundColor: Colors.green,
-        ),
-      );
     }
   }
 
@@ -139,7 +148,7 @@ class _ParentModeScreenState extends ConsumerState<ParentModeScreen> {
                   minimumSize: const Size(double.infinity, 50),
                   backgroundColor: Colors.deepPurple,
                 ),
-                child: const Text('Avaa', style: TextStyle(fontSize: 18)),
+                child: const Text('Avaa', style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
             ],
           ),
@@ -150,7 +159,7 @@ class _ParentModeScreenState extends ConsumerState<ParentModeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Vanhempien näkymä'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -186,27 +195,6 @@ class _ParentModeScreenState extends ConsumerState<ParentModeScreen> {
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
-          ),
-          const SizedBox(height: 16),
-          _buildMenuCard(
-            icon: Icons.image_search,
-            title: 'Hae PECS-kuvia',
-            subtitle: 'Etsi kuvia ARASAAC-tietokannasta',
-            color: Colors.purple,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PecsSearchScreen()),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildMenuCard(
-            icon: Icons.notifications_active,
-            title: 'Ajasta ilmoitukset',
-            subtitle: 'Aseta muistutukset tehtäville',
-            color: Colors.green,
-            onTap: _scheduleNotifications,
           ),
           const SizedBox(height: 32),
           const Divider(),

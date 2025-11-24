@@ -5,14 +5,17 @@ import '../models/app_settings.dart';
 import '../models/task_completion.dart';
 import '../services/hive_service.dart';
 import '../services/notification_service.dart';
+import '../services/task_sound_scheduler.dart';
 
 // Tasks Provider
 final tasksProvider = StateNotifierProvider<TasksNotifier, List<MorningTask>>((ref) {
-  return TasksNotifier();
+  return TasksNotifier(ref);
 });
 
 class TasksNotifier extends StateNotifier<List<MorningTask>> {
-  TasksNotifier() : super([]) {
+  final Ref ref;
+  
+  TasksNotifier(this.ref) : super([]) {
     loadTasks();
   }
 
@@ -23,17 +26,22 @@ class TasksNotifier extends StateNotifier<List<MorningTask>> {
   Future<void> addTask(MorningTask task) async {
     await HiveService.addTask(task);
     loadTasks();
+    await _rescheduleAllSounds();
   }
 
   Future<void> updateTask(MorningTask task) async {
     await HiveService.updateTask(task);
     loadTasks();
+    await _rescheduleAllSounds();
   }
 
   Future<void> deleteTask(String taskId) async {
+    // First remove from state immediately for instant UI update
+    state = state.where((task) => task.id != taskId).toList();
+    // Then remove from storage
     await HiveService.deleteTask(taskId);
     await NotificationService().cancelNotification(taskId);
-    loadTasks();
+    await _rescheduleAllSounds();
   }
 
   Future<void> reorderTasks(int oldIndex, int newIndex) async {
@@ -53,16 +61,27 @@ class TasksNotifier extends StateNotifier<List<MorningTask>> {
     }
 
     loadTasks();
+    await _rescheduleAllSounds();
+  }
+
+  Future<void> _rescheduleAllSounds() async {
+    final settings = ref.read(settingsProvider);
+    await TaskSoundScheduler().scheduleAllTaskSounds(
+      tasks: state,
+      settings: settings,
+    );
   }
 }
 
 // Settings Provider
 final settingsProvider = StateNotifierProvider<SettingsNotifier, AppSettings>((ref) {
-  return SettingsNotifier();
+  return SettingsNotifier(ref);
 });
 
 class SettingsNotifier extends StateNotifier<AppSettings> {
-  SettingsNotifier() : super(AppSettings()) {
+  final Ref ref;
+  
+  SettingsNotifier(this.ref) : super(AppSettings()) {
     loadSettings();
   }
 
@@ -73,6 +92,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> updateSettings(AppSettings settings) async {
     await HiveService.saveSettings(settings);
     state = settings;
+    await _rescheduleAllSounds();
   }
 
   Future<void> setFirstLaunchComplete() async {
@@ -106,6 +126,14 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       departureMinute: minute,
     );
     await updateSettings(updated);
+  }
+
+  Future<void> _rescheduleAllSounds() async {
+    final tasks = ref.read(tasksProvider);
+    await TaskSoundScheduler().scheduleAllTaskSounds(
+      tasks: tasks,
+      settings: state,
+    );
   }
 }
 

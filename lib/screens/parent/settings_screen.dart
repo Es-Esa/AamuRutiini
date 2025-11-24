@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/app_providers.dart';
 import '../../services/secure_storage_service.dart';
-import '../../services/notification_service.dart';
 import 'app_info_screen.dart';
+import 'sound_settings_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -96,26 +96,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _requestNotificationPermission() async {
-    final granted = await NotificationService().requestPermissions();
-    
-    if (granted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ilmoitusoikeudet myönnetty'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ilmoitusoikeudet evätty'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
@@ -187,14 +167,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
           ),
 
-          ListTile(
-            leading: const Icon(Icons.notification_add, color: Colors.blue),
-            title: const Text('Pyydä ilmoitusoikeudet'),
-            subtitle: const Text('Salli ilmoitukset käyttöjärjestelmässä'),
-            trailing: const Icon(Icons.arrow_forward),
-            onTap: _requestNotificationPermission,
-          ),
-
           const Divider(),
 
           // Sounds
@@ -208,14 +180,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
           ),
 
-          // Text to Speech
-          SwitchListTile(
-            secondary: const Icon(Icons.record_voice_over, color: Colors.teal),
-            title: const Text('Puhemuistutukset'),
-            subtitle: const Text('Ilmoitukset luetaan ääneen'),
-            value: settings.ttsEnabled,
-            onChanged: (value) {
-              ref.read(settingsProvider.notifier).toggleTts(value);
+          ListTile(
+            leading: const Icon(Icons.music_note, color: Colors.purple),
+            title: const Text('Ääniasetus'),
+            subtitle: const Text('Valitse hälytysäänet'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SoundSettingsScreen(),
+                ),
+              );
             },
           ),
 
@@ -225,7 +201,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SwitchListTile(
             secondary: const Icon(Icons.vibration, color: Colors.purple),
             title: const Text('Värinä'),
-            subtitle: const Text('Värise ilmoitusten yhteydessä'),
+            subtitle: const Text('Äänien yhteydessä laite värisee'),
             value: settings.vibrateEnabled,
             onChanged: (value) {
               final updated = settings.copyWith(vibrateEnabled: value);

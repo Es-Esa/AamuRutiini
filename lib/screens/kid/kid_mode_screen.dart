@@ -4,6 +4,7 @@ import '../../models/morning_task.dart';
 import '../../providers/app_providers.dart';
 import '../../services/audio_service.dart';
 import '../../services/tts_service.dart';
+import '../../services/timer_service.dart';
 import '../../widgets/countdown_circle.dart';
 import '../../widgets/task_card_widget.dart';
 import '../parent/parent_mode_screen.dart';
@@ -16,48 +17,75 @@ class KidModeScreen extends ConsumerStatefulWidget {
 }
 
 class _KidModeScreenState extends ConsumerState<KidModeScreen> {
-  int _parentModeClickCount = 0;
-  DateTime? _lastParentModeClick;
+  final _timerService = TimerService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Start monitoring in the next frame after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startTimerMonitoring();
+    });
+  }
+
+  void _startTimerMonitoring() {
+    _timerService.startMonitoring(
+      getTasks: () => ref.read(tasksProvider),
+      getCompletions: () => ref.read(taskCompletionsProvider),
+      getSettings: () => ref.read(settingsProvider),
+      onTaskTimeoutComplete: (taskId) {
+        // Automaattisesti merkitse tehtävä valmiiksi kun timeout ääni on toistettu
+        print('Task timeout complete for $taskId, marking as complete');
+        _markTaskComplete(taskId, autoComplete: true);
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _timerService.stopMonitoring();
+    super.dispose();
+  }
 
   void _onParentModeAccess() {
-    final now = DateTime.now();
-    
-    // Reset counter if more than 2 seconds have passed
-    if (_lastParentModeClick == null ||
-        now.difference(_lastParentModeClick!) > const Duration(seconds: 2)) {
-      _parentModeClickCount = 1;
-    } else {
-      _parentModeClickCount++;
-    }
-    
-    _lastParentModeClick = now;
-
-    // Navigate to parent mode after 5 taps
-    if (_parentModeClickCount >= 5) {
-      _parentModeClickCount = 0;
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const ParentModeScreen()),
-      );
-    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const ParentModeScreen()),
+    );
   }
 
   bool _canCompleteTask(MorningTask task) {
     final now = DateTime.now();
-    final taskTime = task.getScheduledDateTime(now);
-    // Tehtävän voi merkitä valmiiksi vasta kun sen aika on saavutettu
-    return now.isAfter(taskTime) || now.isAtSameMomentAs(taskTime);
+    final taskStartTime = task.getScheduledDateTime(now);
+    final halfDuration = Duration(seconds: (task.durationSeconds / 2).round());
+    final minimumCompletionTime = taskStartTime.add(halfDuration);
+    
+    // Tehtävän voi merkitä valmiiksi vasta kun puolet ajasta on kulunut
+    return now.isAfter(minimumCompletionTime) || now.isAtSameMomentAs(minimumCompletionTime);
   }
 
-  Future<void> _markTaskComplete(String taskId) async {
+  bool _hasTaskStarted(MorningTask task) {
+    final now = DateTime.now();
+    final taskStartTime = task.getScheduledDateTime(now);
+    
+    // Tehtävä on alkanut jos scheduled time on mennyt tai on nyt
+    return now.isAfter(taskStartTime) || now.isAtSameMomentAs(taskStartTime);
+  }
+
+  Future<void> _markTaskComplete(String taskId, {bool autoComplete = false}) async {
     final allTasks = ref.read(tasksProvider);
     final task = allTasks.firstWhere((t) => t.id == taskId);
     
-    // Tarkista onko tehtävän aika
-    if (!_canCompleteTask(task)) {
+    // Tarkista onko tehtävän aika (vain jos ei automaattinen)
+    if (!autoComplete && !_canCompleteTask(task)) {
+      final now = DateTime.now();
+      final taskStartTime = task.getScheduledDateTime(now);
+      final halfDuration = Duration(seconds: (task.durationSeconds / 2).round());
+      final minimumCompletionTime = taskStartTime.add(halfDuration);
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Odota vielä! Tehtävän aika on ${task.scheduledHour.toString().padLeft(2, '0')}:${task.scheduledMinute.toString().padLeft(2, '0')}',
+            'Odota vielä! Voit merkitä tehtävän valmiiksi klo ${minimumCompletionTime.hour.toString().padLeft(2, '0')}:${minimumCompletionTime.minute.toString().padLeft(2, '0')}',
             style: const TextStyle(fontSize: 16),
           ),
           backgroundColor: Colors.orange[700],
@@ -81,6 +109,9 @@ class _KidModeScreenState extends ConsumerState<KidModeScreen> {
 
     // Mark task as complete
     await ref.read(taskCompletionsProvider.notifier).markTaskComplete(taskId);
+
+    // Notify timer service that task was completed
+    _timerService.taskCompleted(taskId);
 
     // Check if all tasks are complete
     final completions = ref.read(taskCompletionsProvider);
@@ -129,11 +160,26 @@ class _KidModeScreenState extends ConsumerState<KidModeScreen> {
     final timeToDepartureAsync = ref.watch(timeToDepartureProvider);
     final settings = ref.watch(settingsProvider);
 
+    // Update timer monitoring when data changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _timerService.startMonitoring(
+        getTasks: () => ref.read(tasksProvider),
+        getCompletions: () => ref.read(taskCompletionsProvider),
+        getSettings: () => ref.read(settingsProvider),
+        onTaskTimeoutComplete: (taskId) {
+          print('Task timeout complete for $taskId, marking as complete');
+          _markTaskComplete(taskId, autoComplete: true);
+        },
+      );
+    });
+
     // Find current/next task
     final currentTask = tasks.firstWhere(
       (task) => completions[task.id] != true,
       orElse: () => tasks.isNotEmpty ? tasks.last : null as dynamic,
     );
+
+    // NOTE: Task start sound is now handled by TimerService, no need to play it here
 
     final completedCount = completions.values.where((v) => v).length;
     final totalCount = tasks.length;
@@ -166,7 +212,11 @@ class _KidModeScreenState extends ConsumerState<KidModeScreen> {
                         color: Colors.white.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.settings, color: Colors.grey, size: 24),
+                      child: const Icon(
+                        Icons.settings, 
+                        color: Colors.grey, 
+                        size: 24,
+                      ),
                     ),
                   ),
                 ],
@@ -290,6 +340,7 @@ class _KidModeScreenState extends ConsumerState<KidModeScreen> {
                                   isCompleted: false,
                                   isCurrent: true,
                                   canComplete: _canCompleteTask(currentTask),
+                                  hasTaskStarted: _hasTaskStarted(currentTask),
                                   onComplete: () => _markTaskComplete(currentTask.id),
                                 ),
                               ],

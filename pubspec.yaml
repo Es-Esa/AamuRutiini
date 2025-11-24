@@ -22,7 +22,7 @@ dependencies:
   
   # Local Notifications
   flutter_local_notifications: ^17.0.0
-  timezone: ^0.9.2
+  timezone: ^0.9.4
   
   # Image Handling
   image_picker: ^1.0.7
@@ -30,6 +30,9 @@ dependencies:
   
   # Audio (optional)
   just_audio: ^0.9.36
+  
+  # Vibration
+  vibration: ^2.0.0
   
   # HTTP Client for ARASAAC API
   http: ^1.1.2
@@ -43,9 +46,11 @@ dependencies:
   # Utilities
   uuid: ^4.2.1
   intl: ^0.19.0
+  shared_preferences: ^2.2.2
   
   # UI Components
   percent_indicator: ^4.2.3
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +58,21 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   hive_generator: ^2.0.1
   build_runner: ^2.4.7
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.10
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/appicon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icons/appicon.png"
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/icons/appsplash.png
+  android: true
+  ios: true
 
 flutter:
   uses-material-design: true
@@ -61,3 +81,19 @@ flutter:
     - assets/images/
     - assets/sounds/
     - assets/pecs/
+    # Task sounds
+    - assets/sounds/tasksounds/alarm.mp3
+    - assets/sounds/tasksounds/fart.mp3
+    - assets/sounds/tasksounds/fart2.mp3
+    - assets/sounds/tasksounds/fart3.mp3
+    - assets/sounds/tasksounds/fun.mp3
+    - assets/sounds/tasksounds/fun2.mp3
+    - assets/sounds/tasksounds/mahtavaa.mp3
+    - assets/sounds/tasksounds/on_aika_suorittaa_tehtava.mp3
+    # Final sounds
+    - assets/sounds/finalsounds/hei_kouluun.mp3
+    - assets/sounds/finalsounds/hei_mahtavaa_nyt_se_alkaa.mp3
+    - assets/sounds/finalsounds/Keke.mp3
+    - assets/sounds/finalsounds/koulun_lahtoo.mp3
+    - assets/sounds/finalsounds/koulu_kutsuu.mp3
+    - assets/sounds/finalsounds/minne_no_kouluun.mp3

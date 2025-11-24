@@ -75,10 +75,25 @@ class AppInfoScreen extends StatelessWidget {
           _buildSectionCard(
             title: 'Kuvaus',
             icon: Icons.info_outline,
-            children: const [
-              Text(
+            children: [
+              const Text(
                 'Aamurutiini on sovellus, joka auttaa lapsia suorittamaan aamun tehtävät itsenäisesti PECS-kuvien (Picture Exchange Communication System) avulla. Sovellus sopii erityisesti autismin kirjon lapsille ja muille lapsille, jotka hyötyvät visuaalisesta tuesta.',
                 style: TextStyle(fontSize: 14, height: 1.5),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Ominaisuudet:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '• Visuaaliset tehtäväkortit PECS-kuvilla\n'
+                '• Ajastetut tehtävät kellonajan mukaan\n'
+                '• Äänihälytykset tehtävän ajan loppuessa\n'
+                '• Lähtöajan muistutus\n'
+                '• Edistymisen seuranta\n'
+                '• Yksinkertainen käyttöliittymä lapselle',
+                style: TextStyle(fontSize: 14, height: 1.8),
               ),
             ],
           ),
